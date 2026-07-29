@@ -417,7 +417,7 @@ if ($result && $result->num_rows > 0) {
             <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
             <div>
               <h4>Phone</h4>
-              <p>(086) 853-2001 / (086) 853-2002</p>
+              <p>+6391231233</p>
             </div>
           </div>
           <div class="contact-info-block">
