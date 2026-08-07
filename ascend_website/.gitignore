@@ -1,0 +1,19 @@
+# Developer-specific application configuration
+/config/config.local.php
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Editor and operating-system metadata
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Runtime logs and temporary files
+*.log
+*.tmp
+*.cache
+

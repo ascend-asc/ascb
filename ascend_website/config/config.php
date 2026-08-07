@@ -1,13 +1,19 @@
 <?php
 
-// Database Configuration
-define('DB_HOST', '127.0.0.1');
-define('DB_USER', 'root');
-define('DB_PASS', ''); // XAMPP default
-define('DB_NAME', 'ascend_db');
+$localConfig = __DIR__ . '/config.local.php';
 
-// Application Configuration
-// Adjust APPROOT and URLROOT according to the environment
-define('APPROOT', dirname(dirname(__FILE__)));
-define('URLROOT', 'http://localhost/ascend_website');
-define('SITENAME', 'ASCB - Andres Soriano Colleges of Bislig');
+if (file_exists($localConfig)) {
+    require_once $localConfig;
+}
+
+defined('DB_HOST') || define('DB_HOST', '127.0.0.1');
+defined('DB_USER') || define('DB_USER', 'root');
+defined('DB_PASS') || define('DB_PASS', '');
+defined('DB_NAME') || define('DB_NAME', 'ascend_db');
+
+defined('APPROOT') || define('APPROOT', dirname(__DIR__));
+defined('URLROOT') || define('URLROOT', 'http://localhost');
+defined('SITENAME') || define(
+    'SITENAME',
+    'ASCB - Andres Soriano Colleges of Bislig'
+);
