@@ -6,7 +6,7 @@ $unread_inquiries = $db->single()->count;
 <!-- ── SIDEBAR ── -->
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-        <img src="<?php echo URLROOT; ?>/images/ascb-logo-transparent.png" alt="ASCB">
+        <img src="<?php echo URLROOT; ?>/assets/images/ascb-logo-transparent.png" alt="ASCB">
         <div class="brand-text">ASCB CMS<br><small style="font-size:0.7rem; font-weight:400; opacity:0.7;">Admin Panel</small></div>
     </div>
 
