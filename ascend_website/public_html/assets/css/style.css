@@ -16,9 +16,7 @@ body {
 
 /* Page Hero Banner (About, Academics, Admissions, News, Contact, etc.) */
 .page-hero {
-    background:
-        linear-gradient(135deg, rgba(11, 47, 107, 0.82) 0%, rgba(31, 78, 156, 0.70) 100%),
-        url('/images/hero-bg.jpg') center center / cover no-repeat;
+    background: linear-gradient(135deg, rgba(11, 47, 107, 0.95) 0%, rgba(31, 78, 156, 0.85) 100%);
     padding: 130px 0 70px;
     position: relative;
     overflow: hidden;
@@ -84,9 +82,6 @@ header.solid {
 .navbar-brand img {
     height: 60px;
     transition: height 0.3s ease;
-}
-    background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%);
-    padding-top: 10px;
 }
 
 .header-transparent .nav-link {
@@ -222,10 +217,6 @@ header.solid {
     background-color: #f4f6f9;
     padding: 80px 0 100px;
     position: relative;
-    background-image: url('/images/hero-bg.jpg'); /* Faint building background if possible */
-    background-size: cover;
-    background-position: center;
-    background-blend-mode: overlay;
 }
 
 .section-divider {
