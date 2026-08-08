@@ -4,7 +4,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4 mb-4">
-                <img src="/images/ascb-logo-transparent.png" alt="Andres Soriano Colleges of Bislig Logo" class="mb-3" style="max-height: 80px;">
+                <img src="<?php echo URLROOT; ?>/assets/images/ascb-logo-transparent.png" alt="Andres Soriano Colleges of Bislig Logo" class="mb-3" style="max-height: 80px;">
                 <p>Andres Soriano Colleges of Bislig envisions itself as a leading private educational institution...</p>
             </div>
             <div class="col-md-4 mb-4">
@@ -23,7 +23,7 @@
                     <p class="mb-1"><i data-lucide="phone" aria-hidden="true" class="me-2"></i> <a href="tel:+6386853222" class="text-light text-decoration-none">(086) 853-2222</a></p>
                     <p class="mb-1"><i data-lucide="mail" aria-hidden="true" class="me-2"></i> <a href="mailto:info@ascb.edu.ph" class="text-light text-decoration-none">info@ascb.edu.ph</a></p>
                     <a href="https://www.facebook.com/AndresSorianoCollege" target="_blank" rel="noopener noreferrer" class="text-light text-decoration-none mt-2 d-inline-block" aria-label="Visit ASCB on Facebook (opens in new tab)">
-                        <i data-lucide="facebook" aria-hidden="true" class="me-2"></i> Andres Soriano College
+                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="me-2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.02 1.791-4.688 4.532-4.688 1.313 0 2.686.235 2.686.235v2.953h-1.513c-1.491 0-1.956.93-1.956 1.884v2.28h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg> Andres Soriano College
                     </a>
                 </address>
             </div>
