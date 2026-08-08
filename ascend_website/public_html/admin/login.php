@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <div class="card login-card">
     <div class="card-header bg-ascb-blue text-center py-4">
-        <img src="/images/ascb-logo-transparent.png" alt="ASCB Logo" class="brand-logo">
+        <img src="<?php echo URLROOT; ?>/assets/images/ascb-logo-transparent.png" alt="ASCB Logo" class="brand-logo">
         <h4 class="mb-0">CMS Admin Login</h4>
     </div>
     <div class="card-body p-4">
