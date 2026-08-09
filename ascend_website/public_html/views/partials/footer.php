@@ -4,7 +4,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4 mb-4">
-                <img src="<?php echo URLROOT; ?>/assets/images/ascb-logo-transparent.png" alt="Andres Soriano Colleges of Bislig Logo" class="mb-3" style="max-height: 80px;">
+                <img src="<?php echo URLROOT; ?>/assets/css/images/ascb-logo-transparent.png" alt="Andres Soriano Colleges of Bislig Logo" class="mb-3" style="max-height: 80px;">
                 <p>Andres Soriano Colleges of Bislig envisions itself as a leading private educational institution...</p>
             </div>
             <div class="col-md-4 mb-4">
