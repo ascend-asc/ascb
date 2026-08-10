@@ -1,0 +1,85 @@
+name: Deploy ASCB website to staging
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "ascend_website/**"
+      - ".github/workflows/deploy-staging.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ascb-staging
+  cancel-in-progress: true
+
+env:
+  SSH_HOST: server245.web-hosting.com
+  SSH_PORT: "21098"
+  SSH_USER: ascblzri
+  DEPLOY_PATH: /home/ascblzri/ascb-staging
+
+jobs:
+  validate-and-deploy:
+    name: Validate PHP and deploy
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: pdo_mysql, fileinfo
+          coverage: none
+
+      - name: Lint PHP files
+        shell: bash
+        run: |
+          find ascend_website -type f -name '*.php' -print0 \
+            | xargs -0 -n1 php -l
+
+      - name: Configure SSH
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/ascb_staging
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/ascb_staging ~/.ssh/known_hosts
+
+      - name: Verify staging destination
+        shell: bash
+        run: |
+          ssh -i ~/.ssh/ascb_staging -p "$SSH_PORT" \
+            "$SSH_USER@$SSH_HOST" \
+            "test -d '$DEPLOY_PATH/public_html' && test -d '$DEPLOY_PATH/config'"
+
+      - name: Deploy application
+        shell: bash
+        run: |
+          rsync -az --delete-delay \
+            --exclude='.git/' \
+            --exclude='config/config.local.php' \
+            --exclude='public_html/uploads/' \
+            --exclude='*.sql' \
+            --exclude='*.log' \
+            -e "ssh -i ~/.ssh/ascb_staging -p $SSH_PORT" \
+            ascend_website/ \
+            "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+
+      - name: Verify deployed entry point
+        shell: bash
+        run: |
+          ssh -i ~/.ssh/ascb_staging -p "$SSH_PORT" \
+            "$SSH_USER@$SSH_HOST" \
+            "test -f '$DEPLOY_PATH/public_html/index.php' && test -f '$DEPLOY_PATH/config/config.local.php'"
+

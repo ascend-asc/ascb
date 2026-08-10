@@ -191,6 +191,30 @@ This is an evaluation of the repository as currently committed:
 - Review upload validation and prevent script execution in upload directories.
 - Back up the database and uploaded files regularly.
 
+## Staging deployment
+
+Pushes to `main` that change files under `ascend_website/` are deployed by
+`.github/workflows/deploy-staging.yml` to `staging.asc-bislig.com`. The workflow
+first lints every PHP file with PHP 8.2, then synchronizes this application to
+the staging host over SSH.
+
+The following GitHub Actions secrets must be configured in the `staging`
+environment:
+
+- `STAGING_SSH_PRIVATE_KEY` — the private half of a dedicated deployment key
+- `STAGING_SSH_KNOWN_HOSTS` — a verified `known_hosts` entry for the hosting server
+
+The deployment intentionally preserves these server-managed paths:
+
+```text
+config/config.local.php
+public_html/uploads/
+```
+
+The staging database is not migrated or replaced by the workflow. Create it
+through cPanel and maintain its credentials only in the server's ignored
+`config/config.local.php` file.
+
 ## License
 
 No license file is currently included. Unless the project owner specifies otherwise, the source should be treated as proprietary.
