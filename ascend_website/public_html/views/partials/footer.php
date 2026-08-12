@@ -1,6 +1,6 @@
 </main>
 <!-- Footer -->
-<footer class="bg-dark text-light py-5 mt-5" role="contentinfo">
+<footer class="bg-primary text-light py-5 mt-5" role="contentinfo">
     <div class="container">
         <div class="row">
             <div class="col-md-4 mb-4">
