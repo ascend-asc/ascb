@@ -215,6 +215,21 @@ The staging database is not migrated or replaced by the workflow. Create it
 through cPanel and maintain its credentials only in the server's ignored
 `config/config.local.php` file.
 
+## Production preparation
+
+`.github/workflows/deploy-production.yml` is a manual-only workflow that
+prepares the isolated `/home/ascblzri/ascb-production` directory. It does not
+modify the main domain's live WordPress document root. Running it requires the
+`production` GitHub environment, its approval rules, and these environment
+secrets:
+
+- `PRODUCTION_SSH_PRIVATE_KEY`
+- `PRODUCTION_SSH_KNOWN_HOSTS`
+
+The operator must enter `prepare-production` when manually starting the
+workflow. Production database migration, upload migration, and the main-domain
+cutover are intentionally separate operations.
+
 ## License
 
 No license file is currently included. Unless the project owner specifies otherwise, the source should be treated as proprietary.
