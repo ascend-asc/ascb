@@ -18,7 +18,7 @@
                             Programs</a></li>
                     <li><a href="<?php echo URLROOT; ?>/student-life" class="text-light text-decoration-none">Student
                             Services</a></li>
-                    <li><a href="../public_html/admin/login.php" class="text-light text-decoration-none">Staff Login</a>
+                    <li><a href="<?php echo URLROOT; ?>/admin/login.php" class="text-light text-decoration-none">Staff Login</a>
                     </li>
                 </ul>
             </div>
