@@ -1,13 +1,16 @@
 <?php
 require_once '../config/config.php';
 require_once '../app/core/Database.php';
+require_once '../app/core/Security.php';
 
 $url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : 'home';
 
 try {
     $db = Database::getInstance();
-} catch (Exception $e) {
-    // Database connection fallback
+} catch (Throwable $e) {
+    error_log('Public request database unavailable: ' . $e->getMessage());
+    http_response_code(503);
+    exit('The website is temporarily unavailable. Please try again later.');
 }
 
 $url_parts = explode('/', $url);
@@ -72,7 +75,7 @@ switch ($base_route) {
             require_once 'views/partials/header.php';
             echo '<main id="main-content">';
             echo '<div class="page-hero text-white"><div class="container text-center py-4"><h1 class="display-5 fw-bold">' . htmlspecialchars($dynamic_page->title) . '</h1></div></div>';
-            echo '<div class="container py-5" style="max-width:900px;">' . $dynamic_page->body . '</div>';
+            echo '<div class="container py-5" style="max-width:900px;">' . Security::sanitizeHtml($dynamic_page->body) . '</div>';
             require_once 'views/partials/footer.php';
         } else {
             $page_title = '404 Not Found';

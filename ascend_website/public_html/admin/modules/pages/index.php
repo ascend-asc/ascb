@@ -3,6 +3,7 @@ require_once '../../../../config/config.php';
 require_once '../../../../app/core/Database.php';
 require_once '../../../../app/core/Auth.php';
 require_once '../../../../app/core/Csrf.php';
+require_once '../../../../app/core/Security.php';
 
 Auth::requireLogin();
 $db = Database::getInstance();
@@ -16,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (isset($_POST['action']) && $_POST['action'] == 'save_page') {
             $title = filter_var($_POST['title'], FILTER_SANITIZE_STRING);
             $slug = filter_var($_POST['slug'], FILTER_SANITIZE_STRING);
-            $body = $_POST['body']; // Allow HTML for body
+            $body = Security::sanitizeHtml($_POST['body'] ?? '');
             $meta_title = filter_var($_POST['meta_title'], FILTER_SANITIZE_STRING);
             $meta_description = filter_var($_POST['meta_description'], FILTER_SANITIZE_STRING);
             $is_published = isset($_POST['is_published']) ? 1 : 0;
@@ -44,7 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if ($e->getCode() == 23000) {
                     $message = '<div class="alert alert-danger">Error: That URL Slug (<strong>' . htmlspecialchars($_POST['slug']) . '</strong>) is already used by another page. Please choose a unique slug.</div>';
                 } else {
-                    $message = '<div class="alert alert-danger">Database error: ' . htmlspecialchars($e->getMessage()) . '</div>';
+                    error_log('Unable to save page: ' . $e->getMessage());
+                    $message = '<div class="alert alert-danger">Unable to save the page.</div>';
                 }
             }
         } elseif (isset($_POST['action']) && $_POST['action'] == 'delete_page') {

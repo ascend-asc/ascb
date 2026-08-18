@@ -1,6 +1,8 @@
 <?php
 $page_title = 'Inquire Now';
 $page_description = 'Have questions? Submit your inquiry to ASCB and our team will get back to you shortly.';
+require_once __DIR__ . '/../../app/core/Csrf.php';
+$csrfToken = Csrf::generateToken();
 ?>
 <?php require_once __DIR__ . '/partials/header.php'; ?>
 <main id="main-content">
@@ -18,6 +20,11 @@ $page_description = 'Have questions? Submit your inquiry to ASCB and our team wi
             <div class="card border-0 shadow-lg p-4 p-md-5 rounded-4">
                 <h3 class="fw-bold text-primary mb-4 text-center">Send Us Your Inquiry</h3>
                 <form action="<?php echo URLROOT; ?>/contact" method="POST">
+                    <?php echo Csrf::getField(); ?>
+                    <div class="d-none" aria-hidden="true">
+                        <label for="website">Website</label>
+                        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                    </div>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Full Name</label>

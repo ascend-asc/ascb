@@ -9,4 +9,4 @@ define('DB_PASS', '');
 define('DB_NAME', 'ascend_db');
 
 define('URLROOT', 'http://your-project.test');
-
+define('APP_ENV', 'development');

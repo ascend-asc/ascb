@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../app/core/Security.php';
 // We expect $news_slug to be set by the router
 $db->query('SELECT * FROM news_events WHERE slug = :slug AND status = "published"');
 $db->bind(':slug', $news_slug);
@@ -43,7 +44,7 @@ require_once __DIR__ . '/partials/header.php';
                     echo nl2br(htmlspecialchars($body));
                 } else {
                     // Output raw HTML if they used an HTML editor
-                    echo $body;
+                    echo Security::sanitizeHtml($body);
                 }
                 ?>
             </div>

@@ -3,11 +3,14 @@ require_once '../../../../config/config.php';
 require_once '../../../../app/core/Database.php';
 require_once '../../../../app/core/Auth.php';
 require_once '../../../../app/core/Csrf.php';
+require_once '../../../../app/core/Upload.php';
 
 Auth::requireLogin();
 $db = Database::getInstance();
 
 $message = '';
+$public_root = __DIR__ . '/../../../../public_html';
+$programs_directory = $public_root . '/uploads/programs';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!isset($_POST['csrf_token']) || !Csrf::validateToken($_POST['csrf_token'])) {
@@ -21,13 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             $brochure_pdf = null;
             if (isset($_FILES['brochure_pdf']) && $_FILES['brochure_pdf']['error'] == 0) {
-                $ext = strtolower(pathinfo($_FILES['brochure_pdf']['name'], PATHINFO_EXTENSION));
-                if ($ext == 'pdf') {
-                    $new_filename = uniqid('program_') . '.pdf';
-                    $upload_path = '../../../../public_html/uploads/programs/' . $new_filename;
-                    if (move_uploaded_file($_FILES['brochure_pdf']['tmp_name'], $upload_path)) {
-                        $brochure_pdf = 'uploads/programs/' . $new_filename;
-                    }
+                try {
+                    $new_filename = Upload::pdf($_FILES['brochure_pdf'], $programs_directory, 'program_');
+                    $brochure_pdf = 'uploads/programs/' . $new_filename;
+                } catch (RuntimeException $e) {
+                    $message = '<div class="alert alert-danger">' . htmlspecialchars($e->getMessage()) . '</div>';
                 }
             }
 
@@ -38,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $db->bind(':b', $brochure_pdf);
             $db->bind(':a', $is_active);
             
-            if ($db->execute()) {
+            if (empty($message) && $db->execute()) {
                 $message = '<div class="alert alert-success">Academic program added successfully.</div>';
             }
         } elseif (isset($_POST['action']) && $_POST['action'] == 'edit_program') {
@@ -55,17 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $brochure_pdf = $current ? $current->brochure_pdf : null;
 
             if (isset($_FILES['brochure_pdf']) && $_FILES['brochure_pdf']['error'] == 0) {
-                $ext = strtolower(pathinfo($_FILES['brochure_pdf']['name'], PATHINFO_EXTENSION));
-                if ($ext == 'pdf') {
-                    $new_filename = uniqid('program_') . '.pdf';
-                    $upload_path = '../../../../public_html/uploads/programs/' . $new_filename;
-                    if (move_uploaded_file($_FILES['brochure_pdf']['tmp_name'], $upload_path)) {
-                        // Delete old if exists
-                        if ($current && $current->brochure_pdf && file_exists('../../../../public_html/' . $current->brochure_pdf)) {
-                            unlink('../../../../public_html/' . $current->brochure_pdf);
-                        }
-                        $brochure_pdf = 'uploads/programs/' . $new_filename;
+                try {
+                    $new_filename = Upload::pdf($_FILES['brochure_pdf'], $programs_directory, 'program_');
+                    if ($current && $current->brochure_pdf) {
+                        Upload::deletePublicFile($current->brochure_pdf, $public_root, 'uploads/programs/');
                     }
+                    $brochure_pdf = 'uploads/programs/' . $new_filename;
+                } catch (RuntimeException $e) {
+                    $message = '<div class="alert alert-danger">' . htmlspecialchars($e->getMessage()) . '</div>';
                 }
             }
 
@@ -77,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $db->bind(':a', $is_active);
             $db->bind(':id', $id);
             
-            if ($db->execute()) {
+            if (empty($message) && $db->execute()) {
                 $message = '<div class="alert alert-success">Academic program updated successfully.</div>';
             }
 

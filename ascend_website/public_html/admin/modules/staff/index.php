@@ -3,11 +3,14 @@ require_once '../../../../config/config.php';
 require_once '../../../../app/core/Database.php';
 require_once '../../../../app/core/Auth.php';
 require_once '../../../../app/core/Csrf.php';
+require_once '../../../../app/core/Upload.php';
 
 Auth::requireLogin();
 $db = Database::getInstance();
 
 $message = '';
+$public_root = __DIR__ . '/../../../../public_html';
+$staff_directory = $public_root . '/uploads/staff';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!isset($_POST['csrf_token']) || !Csrf::validateToken($_POST['csrf_token'])) {
@@ -20,13 +23,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             $photo = null;
             if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
-                $ext = strtolower(pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION));
-                if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
-                    $new_filename = uniqid('staff_') . '.' . $ext;
-                    $upload_path = '../../../../public_html/uploads/staff/' . $new_filename;
-                    if (move_uploaded_file($_FILES['photo']['tmp_name'], $upload_path)) {
-                        $photo = 'uploads/staff/' . $new_filename;
-                    }
+                try {
+                    $new_filename = Upload::image($_FILES['photo'], $staff_directory, 'staff_');
+                    $photo = 'uploads/staff/' . $new_filename;
+                } catch (RuntimeException $e) {
+                    $message = '<div class="alert alert-danger">' . htmlspecialchars($e->getMessage()) . '</div>';
                 }
             }
 
@@ -36,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $db->bind(':d', $department);
             $db->bind(':ph', $photo);
             
-            if ($db->execute()) {
+            if (empty($message) && $db->execute()) {
                 $message = '<div class="alert alert-success">Staff member added.</div>';
             }
         } elseif (isset($_POST['action']) && $_POST['action'] == 'edit_staff') {
@@ -52,17 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $photo = $current ? $current->photo : null;
 
             if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
-                $ext = strtolower(pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION));
-                if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
-                    $new_filename = uniqid('staff_') . '.' . $ext;
-                    $upload_path = '../../../../public_html/uploads/staff/' . $new_filename;
-                    if (move_uploaded_file($_FILES['photo']['tmp_name'], $upload_path)) {
-                        // Delete old photo if exists
-                        if ($current && $current->photo && file_exists('../../../../public_html/' . $current->photo)) {
-                            unlink('../../../../public_html/' . $current->photo);
-                        }
-                        $photo = 'uploads/staff/' . $new_filename;
+                try {
+                    $new_filename = Upload::image($_FILES['photo'], $staff_directory, 'staff_');
+                    if ($current && $current->photo) {
+                        Upload::deletePublicFile($current->photo, $public_root, 'uploads/staff/');
                     }
+                    $photo = 'uploads/staff/' . $new_filename;
+                } catch (RuntimeException $e) {
+                    $message = '<div class="alert alert-danger">' . htmlspecialchars($e->getMessage()) . '</div>';
                 }
             }
 
@@ -73,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $db->bind(':ph', $photo);
             $db->bind(':id', $id);
 
-            if ($db->execute()) {
+            if (empty($message) && $db->execute()) {
                 $message = '<div class="alert alert-success">Staff member updated.</div>';
             }
         } elseif (isset($_POST['action']) && $_POST['action'] == 'delete_staff') {

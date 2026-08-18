@@ -7,11 +7,10 @@ class Database {
 
     private $dbh;
     private $stmt;
-    private $error;
     private static $instance = null;
 
     private function __construct() {
-        $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbname;
+        $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbname . ';charset=utf8mb4';
         $options = array(
             PDO::ATTR_PERSISTENT => false,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -21,8 +20,8 @@ class Database {
         try {
             $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
         } catch(PDOException $e) {
-            $this->error = $e->getMessage();
-            echo "Database Connection Error: " . $this->error;
+            error_log('Database connection failed: ' . $e->getMessage());
+            throw new RuntimeException('Database connection unavailable.', 0, $e);
         }
     }
 

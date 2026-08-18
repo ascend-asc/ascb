@@ -3,11 +3,14 @@ require_once '../../../../config/config.php';
 require_once '../../../../app/core/Database.php';
 require_once '../../../../app/core/Auth.php';
 require_once '../../../../app/core/Csrf.php';
+require_once '../../../../app/core/Upload.php';
 
 Auth::requireLogin();
 $db = Database::getInstance();
 
 $message = '';
+$public_root = __DIR__ . '/../../../../public_html';
+$slides_directory = $public_root . '/uploads/slides';
 
 // Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -25,18 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $image_path = '';
             if (isset($_FILES['slide_image']) && $_FILES['slide_image']['error'] == 0) {
-                $allowed  = ['jpg', 'jpeg', 'png', 'webp'];
-                $ext      = strtolower(pathinfo($_FILES['slide_image']['name'], PATHINFO_EXTENSION));
-                if (in_array($ext, $allowed)) {
-                    $new_filename = uniqid('slide_') . '.' . $ext;
-                    $upload_path  = __DIR__ . '/../../../../public_html/uploads/slides/' . $new_filename;
-                    if (move_uploaded_file($_FILES['slide_image']['tmp_name'], $upload_path)) {
-                        $image_path = 'uploads/slides/' . $new_filename;
-                    } else {
-                        $message = '<div class="alert alert-danger">Failed to upload image. Check folder permissions.</div>';
-                    }
-                } else {
-                    $message = '<div class="alert alert-danger">Invalid file type. Use JPG, PNG, or WEBP.</div>';
+                try {
+                    $new_filename = Upload::image($_FILES['slide_image'], $slides_directory, 'slide_');
+                    $image_path = 'uploads/slides/' . $new_filename;
+                } catch (RuntimeException $e) {
+                    $message = '<div class="alert alert-danger">' . htmlspecialchars($e->getMessage()) . '</div>';
                 }
             }
 
@@ -70,22 +66,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Optional new image upload
             if (isset($_FILES['slide_image']) && $_FILES['slide_image']['error'] == 0) {
-                $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-                $ext     = strtolower(pathinfo($_FILES['slide_image']['name'], PATHINFO_EXTENSION));
-                if (in_array($ext, $allowed)) {
-                    $new_filename = uniqid('slide_') . '.' . $ext;
-                    $upload_path  = __DIR__ . '/../../../../public_html/uploads/slides/' . $new_filename;
-                    if (move_uploaded_file($_FILES['slide_image']['tmp_name'], $upload_path)) {
-                        // Delete old image
-                        if ($current && file_exists(__DIR__ . '/../../../../public_html/' . $current->image_path)) {
-                            unlink(__DIR__ . '/../../../../public_html/' . $current->image_path);
-                        }
-                        $image_path = 'uploads/slides/' . $new_filename;
-                    } else {
-                        $message = '<div class="alert alert-danger">Failed to upload new image.</div>';
+                try {
+                    $new_filename = Upload::image($_FILES['slide_image'], $slides_directory, 'slide_');
+                    if ($current && $current->image_path) {
+                        Upload::deletePublicFile($current->image_path, $public_root, 'uploads/slides/');
                     }
-                } else {
-                    $message = '<div class="alert alert-danger">Invalid file type. Use JPG, PNG, or WEBP.</div>';
+                    $image_path = 'uploads/slides/' . $new_filename;
+                } catch (RuntimeException $e) {
+                    $message = '<div class="alert alert-danger">' . htmlspecialchars($e->getMessage()) . '</div>';
                 }
             }
 
@@ -109,8 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $db->bind(':id', $id);
             $slide = $db->single();
             if ($slide) {
-                $file = __DIR__ . '/../../../../public_html/' . $slide->image_path;
-                if (file_exists($file)) unlink($file);
+                Upload::deletePublicFile($slide->image_path, $public_root, 'uploads/slides/');
                 $db->query('DELETE FROM hero_slides WHERE id = :id');
                 $db->bind(':id', $id);
                 $db->execute();

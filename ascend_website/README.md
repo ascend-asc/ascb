@@ -48,7 +48,7 @@ public_html/views/         Public page templates and shared partials
 public_html/admin/         Login, dashboard, and CMS modules
 public_html/assets/        Site styles
 public_html/uploads/       Uploaded slide, news, and staff assets
-schema.sql                 Empty schema plus a development administrator
+schema.sql                 Empty schema without default credentials
 ascend_db.sql              Full sample database dump and content
 ```
 
@@ -82,7 +82,7 @@ For Apache, this can be done with an alias whose target is the repository's `pub
 Choose one of the two SQL files:
 
 - Import `ascend_db.sql` for the included demonstration content and uploaded-asset references.
-- Import `schema.sql` for the table structure and a minimal development administrator.
+- Import `schema.sql` for table structure only, then provision an administrator securely.
 
 Example using the MySQL CLI from the repository root:
 
@@ -90,7 +90,9 @@ Example using the MySQL CLI from the repository root:
 mysql -u root -p < ascend_db.sql
 ```
 
-Both scripts create/use a database named `ascend_db`. Do not import both: the dump contains existing records, while `schema.sql` inserts its own default administrator.
+Do not import both: the dump contains existing records and imports into the
+database selected by the client, while `schema.sql` creates/uses `ascend_db`
+and provides empty tables without an administrator.
 
 ### 4. Configure the application
 
@@ -126,14 +128,10 @@ There is currently no `.htaccess` file in this repository, so this rule must be 
 - Public site: `http://localhost/ascend_website/`
 - Admin login: `http://localhost/ascend_website/admin/login.php`
 
-When `schema.sql` is used, the seeded development credentials are:
-
-```text
-Email:    admin@ascb.edu.ph
-Password: password123
-```
-
-Change this password immediately. The full `ascend_db.sql` dump contains a different sample account and should not be treated as a known-login source; create or reset an administrator record before relying on it.
+No default administrator is created by `schema.sql`. Provision a unique
+superadmin account with a strong password hash for each environment. The full
+`ascend_db.sql` dump contains demonstration data and must not be treated as a
+source of production credentials.
 
 ## Public routes
 
@@ -168,28 +166,35 @@ Limits and accepted MIME types are enforced separately by each module. Productio
 This is an evaluation of the repository as currently committed:
 
 - There is no automated test suite or dependency manifest.
-- Database connection failures are printed to the response by `Database.php`; production deployments should log generic errors instead of exposing connection details.
-- `admin/login.php` contains a development-only fallback login when a database operation throws. Remove it before production use.
 - `config/config.php` contains environment-specific credentials and URL values. Moving these to environment variables is recommended.
-- The public contact form does not currently use a CSRF token, although administrative forms do.
-- CMS page bodies are deliberately rendered as HTML. Access to page editing must therefore remain trusted and tightly controlled.
-- Role values are stored, but the modules generally require only a logged-in session rather than enforcing per-role permissions.
-- The settings module queries `site_settings`. The full dump defines that table, but `schema.sql` defines only `settings`; the settings screen therefore fails after a schema-only installation until the schema or query is reconciled.
-- The user-management module checks `$_SESSION['user']`, while authentication stores individual `admin_*` session keys. Its self-edit/self-delete protection therefore does not currently identify the signed-in user correctly.
+- CMS page and news bodies support a sanitized HTML allowlist. Administrative content access should still remain limited to trusted staff.
 - Some image references begin at `/images/...`, but no `public_html/images/` directory is included. Supply the referenced logo assets or update those paths.
 - The sample dump contains absolute localhost links in some content. Update them when deploying under another hostname or base path.
 
 ## Production checklist
 
 - Replace all sample administrator accounts and passwords.
-- Remove the login fallback and disable PHP error display.
+- Keep PHP error display disabled and server-side error logging enabled.
 - Store database secrets outside source control.
 - Serve the application over HTTPS and set secure session-cookie options.
-- Add authorization checks for privileged administrator actions.
+- Review administrator roles regularly and disable accounts that are no longer needed.
 - Reconcile the `settings`/`site_settings` table name.
 - Add CSRF protection and rate limiting to the public inquiry form.
 - Review upload validation and prevent script execution in upload directories.
 - Back up the database and uploaded files regularly.
+
+## Security controls
+
+The application applies secure, HTTP-only session cookies on HTTPS, strict
+session handling, CSRF validation, login throttling, superadmin-only user
+management, generic database error responses, MIME-validated uploads, and
+script-execution blocking below `public_html/uploads/`. Public inquiries use a
+CSRF token, a honeypot, length validation, and a short submission cooldown.
+
+Production environments default to hidden PHP errors with server-side logging.
+Set `APP_ENV` to `development` only in a local, ignored `config.local.php`.
+There are no default administrator credentials in `schema.sql`; every
+environment must provision unique administrator accounts and strong passwords.
 
 ## Staging deployment
 

@@ -80,7 +80,9 @@ jobs:
             if rsync -az --delete-delay \
               --exclude='.git/' \
               --exclude='config/config.local.php' \
-              --exclude='public_html/uploads/' \
+              --include='public_html/uploads/' \
+              --include='public_html/uploads/.htaccess' \
+              --exclude='public_html/uploads/***' \
               --exclude='*.sql' \
               --exclude='*.log' \
               -e "ssh -o ConnectTimeout=20 -i ~/.ssh/ascb_production -p $SSH_PORT" \
