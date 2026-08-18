@@ -8,10 +8,7 @@ RewriteRule ^uploads/.*\.(php[0-9]?|phtml|phar|cgi|pl|py|sh)$ - [F,NC,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-<<<<<<< HEAD
 RewriteCond %{REQUEST_URI} !^/admin(/|$)
-RewriteRule ^(.+?)/?$ index.php?url=$1 [QSA,L]
-=======
 RewriteRule ^(.+?)/?$ index.php?url=$1 [QSA,L]
 
 <IfModule mod_headers.c>
@@ -20,4 +17,3 @@ RewriteRule ^(.+?)/?$ index.php?url=$1 [QSA,L]
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 </IfModule>
->>>>>>> e0effc0ba271a5b2096c45327bd125a7f62fe139
