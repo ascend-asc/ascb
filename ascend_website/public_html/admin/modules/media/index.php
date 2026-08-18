@@ -3,12 +3,14 @@ require_once '../../../../config/config.php';
 require_once '../../../../app/core/Database.php';
 require_once '../../../../app/core/Auth.php';
 require_once '../../../../app/core/Csrf.php';
+require_once '../../../../app/core/Upload.php';
 
 Auth::requireLogin();
 
 $message = '';
 $uploads_dir = '../../../../public_html/uploads';
-$allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx'];
+$allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'];
+$public_root = __DIR__ . '/../../../../public_html';
 
 // Handle Actions
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['csrf_token']) && Csrf::validateToken($_POST['csrf_token'])) {
@@ -23,16 +25,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['csrf_token']) && Csrf:
         }
 
         if (isset($_FILES['file']) && $_FILES['file']['error'] == 0) {
-            $ext = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
-            if (in_array($ext, $allowed_extensions)) {
-                $new_name = uniqid('media_') . '.' . $ext;
-                if (move_uploaded_file($_FILES['file']['tmp_name'], $target_dir . '/' . $new_name)) {
-                    $message = '<div class="alert alert-success"><i data-lucide="check-circle" class="me-2"></i>File uploaded successfully.</div>';
+            try {
+                $ext = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
+                if ($ext === 'pdf') {
+                    Upload::pdf($_FILES['file'], $target_dir, 'media_');
                 } else {
-                    $message = '<div class="alert alert-danger">Failed to move uploaded file.</div>';
+                    Upload::image($_FILES['file'], $target_dir, 'media_');
                 }
-            } else {
-                $message = '<div class="alert alert-danger">File type not allowed.</div>';
+                $message = '<div class="alert alert-success"><i data-lucide="check-circle" class="me-2"></i>File uploaded successfully.</div>';
+            } catch (RuntimeException $e) {
+                $message = '<div class="alert alert-danger">' . htmlspecialchars($e->getMessage()) . '</div>';
             }
         } else {
              $message = '<div class="alert alert-danger">Error uploading file.</div>';
@@ -43,12 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['csrf_token']) && Csrf:
     if (isset($_POST['action']) && $_POST['action'] == 'delete') {
         $file_path = $_POST['file_path'] ?? '';
         // Security check to prevent directory traversal
-        if (strpos($file_path, 'uploads/') === 0 && strpos($file_path, '..') === false) {
-            $full_path = '../../../../public_html/' . $file_path;
-            if (file_exists($full_path) && is_file($full_path)) {
-                unlink($full_path);
-                $message = '<div class="alert alert-success"><i data-lucide="check-circle" class="me-2"></i>File deleted.</div>';
-            }
+        if (Upload::deletePublicFile($file_path, $public_root, 'uploads/')) {
+            $message = '<div class="alert alert-success"><i data-lucide="check-circle" class="me-2"></i>File deleted.</div>';
         }
     }
 }
@@ -168,7 +166,7 @@ require_once __DIR__ . '/../../partials/sidebar.php';
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Select File</label>
-                        <input type="file" name="file" class="form-control" required accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx">
+                        <input type="file" name="file" class="form-control" required accept=".jpg,.jpeg,.png,.gif,.webp,.pdf">
                         <small class="text-muted d-block mt-1">Allowed: JPG, PNG, GIF, WEBP, PDF, DOC. Max size depends on server config.</small>
                     </div>
                 </div>

@@ -10,9 +10,9 @@ $db = Database::getInstance();
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'mark_read') {
-    if (Csrf::validateToken($_POST['csrf_token'])) {
+    if (isset($_POST['csrf_token']) && Csrf::validateToken($_POST['csrf_token'])) {
         $db->query('UPDATE inquiries SET is_read = 1 WHERE id = :id');
-        $db->bind(':id', $_POST['inquiry_id']);
+        $db->bind(':id', (int) ($_POST['inquiry_id'] ?? 0));
         $db->execute();
         $message = '<div class="alert alert-success">Marked as read.</div>';
     }

@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS media_library (
     FOREIGN KEY (uploaded_by) REFERENCES admin_users(id) ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS settings (
+CREATE TABLE IF NOT EXISTS site_settings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     setting_key VARCHAR(100) NOT NULL UNIQUE,
     setting_value TEXT
@@ -116,6 +116,5 @@ CREATE TABLE IF NOT EXISTS inquiries (
     is_read BOOLEAN DEFAULT FALSE
 );
 
--- Insert default superadmin (password is 'password123')
-INSERT INTO admin_users (full_name, email, password_hash, role) VALUES 
-('Super Admin', 'admin@ascb.edu.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'superadmin');
+-- No default administrator is created. Create a unique superadmin account with
+-- a strong password hash during environment provisioning.

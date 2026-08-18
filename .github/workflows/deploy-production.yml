@@ -1,32 +1,32 @@
-name: Deploy ASCB website to staging
+name: Prepare ASCB production release
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "ascend_website/**"
-      - ".github/workflows/deploy-staging.yml"
   workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type prepare-production to deploy to the isolated production directory
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: ascb-staging
-  cancel-in-progress: true
+  group: ascb-production-preparation
+  cancel-in-progress: false
 
 env:
   SSH_HOST: server245.web-hosting.com
   SSH_PORT: "21098"
   SSH_USER: ascblzri
-  DEPLOY_PATH: /home/ascblzri/ascb-staging
+  DEPLOY_PATH: /home/ascblzri/ascb-production
 
 jobs:
   validate-and-deploy:
-    name: Validate PHP and deploy
+    name: Validate and prepare production files
+    if: github.event.inputs.confirmation == 'prepare-production'
     runs-on: ubuntu-latest
-    environment: staging
+    environment: production
 
     steps:
       - name: Check out repository
@@ -48,21 +48,24 @@ jobs:
       - name: Configure SSH
         shell: bash
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
-          SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+          SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
         run: |
+          test -n "$SSH_PRIVATE_KEY"
+          test -n "$SSH_KNOWN_HOSTS"
           install -d -m 700 ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/ascb_staging
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/ascb_production
           printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/ascb_staging ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/ascb_production ~/.ssh/known_hosts
 
-      - name: Verify staging destination
+      - name: Verify isolated production destination
         shell: bash
         run: |
+          test "$DEPLOY_PATH" = "/home/ascblzri/ascb-production"
           for attempt in 1 2 3; do
-            if ssh -o ConnectTimeout=20 -i ~/.ssh/ascb_staging -p "$SSH_PORT" \
+            if ssh -o ConnectTimeout=20 -i ~/.ssh/ascb_production -p "$SSH_PORT" \
               "$SSH_USER@$SSH_HOST" \
-              "test -d '$DEPLOY_PATH/public_html' && test -d '$DEPLOY_PATH/config'"; then
+              "test -d '$DEPLOY_PATH/public_html' && test -d '$DEPLOY_PATH/config' && test -f '$DEPLOY_PATH/config/config.local.php'"; then
               exit 0
             fi
             echo "SSH attempt $attempt failed; retrying..."
@@ -70,7 +73,7 @@ jobs:
           done
           exit 1
 
-      - name: Deploy application
+      - name: Deploy to isolated production directory
         shell: bash
         run: |
           for attempt in 1 2 3; do
@@ -82,7 +85,7 @@ jobs:
               --exclude='public_html/uploads/***' \
               --exclude='*.sql' \
               --exclude='*.log' \
-              -e "ssh -o ConnectTimeout=20 -i ~/.ssh/ascb_staging -p $SSH_PORT" \
+              -e "ssh -o ConnectTimeout=20 -i ~/.ssh/ascb_production -p $SSH_PORT" \
               ascend_website/ \
               "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"; then
               exit 0
@@ -92,9 +95,10 @@ jobs:
           done
           exit 1
 
-      - name: Verify deployed entry point
+      - name: Verify prepared production files
         shell: bash
         run: |
-          ssh -i ~/.ssh/ascb_staging -p "$SSH_PORT" \
+          ssh -o ConnectTimeout=20 -i ~/.ssh/ascb_production -p "$SSH_PORT" \
             "$SSH_USER@$SSH_HOST" \
-            "test -f '$DEPLOY_PATH/public_html/index.php' && test -f '$DEPLOY_PATH/config/config.local.php'"
+            "test -f '$DEPLOY_PATH/public_html/index.php' && test -f '$DEPLOY_PATH/config/config.local.php' && test -d '$DEPLOY_PATH/app'"
+

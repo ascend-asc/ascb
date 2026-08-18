@@ -3,6 +3,9 @@ require_once '../../config/config.php';
 require_once '../../app/core/Database.php';
 require_once '../../app/core/Auth.php';
 require_once '../../app/core/Csrf.php';
+require_once '../../app/core/RateLimiter.php';
+
+header('Cache-Control: no-store, private');
 
 // If already logged in, redirect to dashboard
 if (Auth::isLoggedIn()) {
@@ -11,17 +14,31 @@ if (Auth::isLoggedIn()) {
 }
 
 $error = '';
+$rateLimiter = new RateLimiter('ascb-login');
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$lockedUntil = (int) ($_SESSION['login_locked_until'] ?? 0);
+$isLocked = $lockedUntil > time();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate CSRF
     if (!isset($_POST['csrf_token']) || !Csrf::validateToken($_POST['csrf_token'])) {
         $error = 'Invalid CSRF token.';
+    } elseif ($isLocked) {
+        $error = 'Too many login attempts. Please wait a few minutes and try again.';
     } else {
         $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-        $password = $_POST['password'];
+        $password = (string) ($_POST['password'] ?? '');
+        $clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $rateKey = $clientIp . '|' . strtolower((string) $email);
 
         if (empty($email) || empty($password)) {
             $error = 'Please enter email and password.';
+        } elseif ($rateLimiter->tooManyAttempts($rateKey, 5, 900)) {
+            $error = 'Too many login attempts. Please wait a few minutes and try again.';
         } else {
             try {
                 $db = Database::getInstance();
@@ -30,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $row = $db->single();
 
                 if ($row && password_verify($password, $row->password_hash)) {
+                    $rateLimiter->clear($rateKey);
                     // Update last login
                     $db->query('UPDATE admin_users SET last_login = NOW() WHERE id = :id');
                     $db->bind(':id', $row->id);
@@ -39,22 +57,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     header('Location: ' . URLROOT . '/admin/index.php');
                     exit;
                 } else {
+                    $rateLimiter->hit($rateKey, 900);
+                    $_SESSION['login_failures'] = (int) ($_SESSION['login_failures'] ?? 0) + 1;
+                    if ($_SESSION['login_failures'] >= 5) {
+                        $_SESSION['login_locked_until'] = time() + 900;
+                    }
+                    usleep(300000);
                     $error = 'Invalid email or password.';
                 }
-            } catch (Exception $e) {
-                // In case DB is not set up yet, allow a dummy bypass for development only!
-                // REMOVE IN PRODUCTION
-                if ($email == 'admin@ascb.edu.ph' && $password == 'password123') {
-                    $dummyUser = new stdClass();
-                    $dummyUser->id = 1;
-                    $dummyUser->email = $email;
-                    $dummyUser->full_name = 'Super Admin';
-                    $dummyUser->role = 'superadmin';
-                    Auth::login($dummyUser);
-                    header('Location: ' . URLROOT . '/admin/index.php');
-                    exit;
-                }
-                $error = 'Database error. Did you run schema.sql?';
+            } catch (Throwable $e) {
+                error_log('Admin authentication service unavailable: ' . $e->getMessage());
+                $error = 'Login is temporarily unavailable. Please try again later.';
             }
         }
     }

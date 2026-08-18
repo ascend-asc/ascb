@@ -22,6 +22,6 @@ class Csrf {
 
     public static function getField() {
         $token = self::generateToken();
-        return '<input type="hidden" name="csrf_token" value="' . $token . '">';
+        return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
     }
 }

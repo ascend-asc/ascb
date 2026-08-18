@@ -3,11 +3,15 @@ require_once '../../../../config/config.php';
 require_once '../../../../app/core/Database.php';
 require_once '../../../../app/core/Auth.php';
 require_once '../../../../app/core/Csrf.php';
+require_once '../../../../app/core/Security.php';
+require_once '../../../../app/core/Upload.php';
 
 Auth::requireLogin();
 $db = Database::getInstance();
 
 $message = '';
+$public_root = __DIR__ . '/../../../../public_html';
+$news_directory = $public_root . '/uploads/news';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!isset($_POST['csrf_token']) || !Csrf::validateToken($_POST['csrf_token'])) {
@@ -17,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $title = filter_var($_POST['title'], FILTER_SANITIZE_STRING);
             $slug = filter_var($_POST['slug'], FILTER_SANITIZE_STRING);
             $excerpt = filter_var($_POST['excerpt'], FILTER_SANITIZE_STRING);
-            $body = $_POST['body'];
+            $body = Security::sanitizeHtml($_POST['body'] ?? '');
             $category = filter_var($_POST['category'], FILTER_SANITIZE_STRING);
             $status = $_POST['status'] == 'published' ? 'published' : 'draft';
             $published_at = ($status == 'published') ? date('Y-m-d H:i:s') : null;
@@ -25,13 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Handle image
             $cover_image = null;
             if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == 0) {
-                $ext = strtolower(pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION));
-                if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
-                    $new_filename = uniqid('news_') . '.' . $ext;
-                    $upload_path = '../../../../public_html/uploads/news/' . $new_filename;
-                    if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $upload_path)) {
-                        $cover_image = 'uploads/news/' . $new_filename;
-                    }
+                try {
+                    $new_filename = Upload::image($_FILES['cover_image'], $news_directory, 'news_');
+                    $cover_image = 'uploads/news/' . $new_filename;
+                } catch (RuntimeException $e) {
+                    $message = '<div class="alert alert-danger">' . htmlspecialchars($e->getMessage()) . '</div>';
                 }
             }
 
@@ -46,14 +48,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $db->bind(':p', $published_at);
             
             try {
-                if ($db->execute()) {
+                if (empty($message) && $db->execute()) {
                     $message = '<div class="alert alert-success">News post saved!</div>';
                 }
             } catch (PDOException $e) {
                 if ($e->getCode() == 23000) {
                     $message = '<div class="alert alert-danger">Error: That URL Slug is already in use by another post. Please choose a unique slug.</div>';
                 } else {
-                    $message = '<div class="alert alert-danger">Database error: ' . htmlspecialchars($e->getMessage()) . '</div>';
+                    error_log('Unable to save news: ' . $e->getMessage());
+                    $message = '<div class="alert alert-danger">Unable to save the news post.</div>';
                 }
             }
         } elseif (isset($_POST['action']) && $_POST['action'] == 'edit_news') {
@@ -61,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $title = filter_var($_POST['title'], FILTER_SANITIZE_STRING);
             $slug = filter_var($_POST['slug'], FILTER_SANITIZE_STRING);
             $excerpt = filter_var($_POST['excerpt'], FILTER_SANITIZE_STRING);
-            $body = $_POST['body'];
+            $body = Security::sanitizeHtml($_POST['body'] ?? '');
             $category = filter_var($_POST['category'], FILTER_SANITIZE_STRING);
             $status = isset($_POST['status']) && $_POST['status'] == 'published' ? 'published' : 'draft';
             
@@ -78,16 +81,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
 
             if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == 0) {
-                $ext = strtolower(pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION));
-                if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
-                    $new_filename = uniqid('news_') . '.' . $ext;
-                    $upload_path = '../../../../public_html/uploads/news/' . $new_filename;
-                    if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $upload_path)) {
-                        if ($current && $current->cover_image && file_exists('../../../../public_html/' . $current->cover_image)) {
-                            unlink('../../../../public_html/' . $current->cover_image);
-                        }
-                        $cover_image = 'uploads/news/' . $new_filename;
+                try {
+                    $new_filename = Upload::image($_FILES['cover_image'], $news_directory, 'news_');
+                    if ($current && $current->cover_image) {
+                        Upload::deletePublicFile($current->cover_image, $public_root, 'uploads/news/');
                     }
+                    $cover_image = 'uploads/news/' . $new_filename;
+                } catch (RuntimeException $e) {
+                    $message = '<div class="alert alert-danger">' . htmlspecialchars($e->getMessage()) . '</div>';
                 }
             }
 
@@ -103,14 +104,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $db->bind(':id', $id);
             
             try {
-                if ($db->execute()) {
+                if (empty($message) && $db->execute()) {
                     $message = '<div class="alert alert-success">News post updated!</div>';
                 }
             } catch (PDOException $e) {
                 if ($e->getCode() == 23000) {
                     $message = '<div class="alert alert-danger">Error: That URL Slug is already in use by another post. Please choose a unique slug.</div>';
                 } else {
-                    $message = '<div class="alert alert-danger">Database error: ' . htmlspecialchars($e->getMessage()) . '</div>';
+                    error_log('Unable to update news: ' . $e->getMessage());
+                    $message = '<div class="alert alert-danger">Unable to update the news post.</div>';
                 }
             }
 

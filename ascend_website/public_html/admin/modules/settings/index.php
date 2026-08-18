@@ -14,6 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!isset($_POST['csrf_token']) || !Csrf::validateToken($_POST['csrf_token'])) {
         $message = '<div class="alert alert-danger">Invalid CSRF token.</div>';
     } elseif (isset($_POST['action']) && $_POST['action'] == 'save_settings') {
+        if (!Auth::hasRole('superadmin')) {
+            http_response_code(403);
+            exit('Forbidden');
+        }
         $fields = ['site_name','site_tagline','contact_email','contact_phone','contact_address','facebook_url','maintenance_mode'];
         foreach ($fields as $key) {
             $value = isset($_POST[$key]) ? trim($_POST[$key]) : '';
@@ -28,12 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $current_password = $_POST['current_password'];
         $new_password = $_POST['new_password'];
         $confirm_password = $_POST['confirm_password'];
-        $user_id = $_SESSION['user']->id;
+        $user_id = Auth::currentUserId();
 
         if ($new_password !== $confirm_password) {
             $message = '<div class="alert alert-danger">New passwords do not match.</div>';
-        } elseif (strlen($new_password) < 6) {
-            $message = '<div class="alert alert-danger">New password must be at least 6 characters long.</div>';
+        } elseif (strlen($new_password) < 12) {
+            $message = '<div class="alert alert-danger">New password must be at least 12 characters long.</div>';
         } else {
             $db->query('SELECT password_hash FROM admin_users WHERE id = :id');
             $db->bind(':id', $user_id);

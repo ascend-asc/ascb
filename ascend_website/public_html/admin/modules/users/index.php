@@ -5,10 +5,11 @@ require_once '../../../../app/core/Auth.php';
 require_once '../../../../app/core/Csrf.php';
 
 Auth::requireLogin();
+Auth::requireRole('superadmin');
 $db = Database::getInstance();
 
 $message = '';
-$current_user_id = $_SESSION['user']->id ?? null;
+$current_user_id = Auth::currentUserId();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!isset($_POST['csrf_token']) || !Csrf::validateToken($_POST['csrf_token'])) {
@@ -16,13 +17,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         if (isset($_POST['action']) && $_POST['action'] == 'save_user') {
             $full_name = filter_var($_POST['full_name'], FILTER_SANITIZE_STRING);
-            $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-            $role = filter_var($_POST['role'], FILTER_SANITIZE_STRING);
+            $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            $role = in_array($_POST['role'] ?? '', ['superadmin', 'editor'], true) ? $_POST['role'] : 'editor';
             $status = isset($_POST['status']) && $_POST['status'] == 'active' ? 'active' : 'inactive';
             $password = $_POST['password'];
             
-            if (empty($password)) {
-                $message = '<div class="alert alert-danger">Password is required for new users.</div>';
+            if (!$email) {
+                $message = '<div class="alert alert-danger">A valid email address is required.</div>';
+            } elseif (strlen($password) < 12) {
+                $message = '<div class="alert alert-danger">Password must be at least 12 characters.</div>';
             } else {
                 $password_hash = password_hash($password, PASSWORD_DEFAULT);
                 
@@ -41,25 +44,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     if ($e->getCode() == 23000) {
                         $message = '<div class="alert alert-danger">Error: Email address is already registered.</div>';
                     } else {
-                        $message = '<div class="alert alert-danger">Database error: ' . htmlspecialchars($e->getMessage()) . '</div>';
+                        error_log('Unable to add admin user: ' . $e->getMessage());
+                        $message = '<div class="alert alert-danger">Unable to save the user account.</div>';
                     }
                 }
             }
         } elseif (isset($_POST['action']) && $_POST['action'] == 'edit_user') {
             $id = (int)$_POST['user_id'];
             $full_name = filter_var($_POST['full_name'], FILTER_SANITIZE_STRING);
-            $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-            $role = filter_var($_POST['role'], FILTER_SANITIZE_STRING);
+            $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            $role = in_array($_POST['role'] ?? '', ['superadmin', 'editor'], true) ? $_POST['role'] : 'editor';
             $status = isset($_POST['status']) && $_POST['status'] == 'active' ? 'active' : 'inactive';
             
             // Prevent locking oneself out
             if ($id == $current_user_id) {
-                $status = 'active'; 
+                $status = 'active';
+                $role = 'superadmin';
             }
             
             $password = $_POST['password'];
             
             try {
+                if (!$email) {
+                    throw new InvalidArgumentException('A valid email address is required.');
+                }
+                if (!empty($password) && strlen($password) < 12) {
+                    throw new InvalidArgumentException('Password must be at least 12 characters.');
+                }
                 if (!empty($password)) {
                     $password_hash = password_hash($password, PASSWORD_DEFAULT);
                     $db->query('UPDATE admin_users SET full_name=:name, email=:email, password_hash=:pass, role=:role, status=:status WHERE id=:id');
@@ -78,15 +89,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $message = '<div class="alert alert-success">User updated successfully!</div>';
                     // Update session if editing self
                     if ($id == $current_user_id) {
-                        $_SESSION['user']->full_name = $full_name;
-                        $_SESSION['user']->email = $email;
+                        Auth::updateCurrentUser($full_name, $email, $role);
                     }
                 }
+            } catch (InvalidArgumentException $e) {
+                $message = '<div class="alert alert-danger">' . htmlspecialchars($e->getMessage()) . '</div>';
             } catch (PDOException $e) {
                 if ($e->getCode() == 23000) {
                     $message = '<div class="alert alert-danger">Error: Email address is already used by another account.</div>';
                 } else {
-                    $message = '<div class="alert alert-danger">Database error: ' . htmlspecialchars($e->getMessage()) . '</div>';
+                        error_log('Unable to update admin user: ' . $e->getMessage());
+                        $message = '<div class="alert alert-danger">Unable to update the user account.</div>';
                 }
             }
         } elseif (isset($_POST['action']) && $_POST['action'] == 'delete_user') {
