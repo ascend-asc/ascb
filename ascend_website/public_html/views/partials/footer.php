@@ -55,13 +55,9 @@
 <script>
     window.addEventListener('scroll', function () {
         const header = document.getElementById('mainHeader');
-        if (window.scrollY > 60) {
-            header.classList.remove('transparent');
-            header.classList.add('solid');
-        } else {
-            header.classList.remove('solid');
-            header.classList.add('transparent');
-        }
+        /* Header stays solid dark navy at all times */
+        header.classList.remove('transparent');
+        header.classList.add('solid');
     });
 </script>
 
