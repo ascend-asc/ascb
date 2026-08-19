@@ -18,11 +18,11 @@
 </head>
 <body>
 
-<header id="mainHeader" class="solid">
+<header id="mainHeader" class="header-transparent">
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid px-5">
             <a class="navbar-brand d-flex align-items-center" href="<?php echo URLROOT; ?>/">
-                <img src="<?php echo URLROOT; ?>/assets/images/ascb-logo-transparent.png" alt="ASCB Logo" style="height: 44px;">
+                <img src="<?php echo URLROOT; ?>/assets/images/ascb-logo-transparent.png" alt="ASCB Logo" style="height: 60px;">
                 <div class="ms-2 text-white lh-sm d-none d-md-block">
                     <strong class="d-block" style="font-size: 1.1rem; font-weight: 700;">Andres Soriano</strong>
                     <small class="d-block" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.9;">COLLEGES OF BISLIG</small>
