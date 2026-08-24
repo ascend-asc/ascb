@@ -93,7 +93,7 @@ switch ($base_route) {
             $page_description = 'The page you are looking for does not exist.';
             require_once 'views/partials/header.php';
             echo '<main id="main-content">';
-            echo '<div class="container text-center py-5 my-5"><h1>404 Not Found</h1><p>The page you are looking for does not exist.</p><a href="' . URLROOT . '" class="btn btn-primary">Return Home</a></div>';
+            echo '<div class="container text-center py-5 my-5"><h1>404 Not Found</h1><p>The page you are looking for does not exist.</p><p class="text-muted small">Debug Route: ' . htmlspecialchars(isset($_GET['url']) ? $_GET['url'] : 'none') . '</p><a href="' . URLROOT . '" class="btn btn-primary mt-3">Return Home</a></div>';
             require_once 'views/partials/footer.php';
         }
         break;
