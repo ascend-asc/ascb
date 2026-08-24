@@ -2,19 +2,17 @@
 require_once '../config/config.php';
 require_once '../app/core/Database.php';
 require_once '../app/core/Security.php';
+// Use REQUEST_URI to bypass Apache RewriteRule quirks that happen on certain server configurations
+$request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-$raw_url = isset($_GET['url']) ? $_GET['url'] : 'home';
+// Strip known subdirectory paths if they exist in the URI
+$request_uri = preg_replace('#^/+(ascend_website/public_html|ascend_website|public_html)(/|$)#i', '/', $request_uri);
 
-// Strip leading slashes to normalize
-$raw_url = ltrim($raw_url, '/');
-
-// Remove directory prefixes if the server routing passed them into the GET parameter
-if (preg_match('#^(ascend_website/public_html|ascend_website)(/|$)#', $raw_url, $matches)) {
-    $raw_url = substr($raw_url, strlen($matches[1]));
-    $raw_url = ltrim($raw_url, '/');
+// Clean resulting path
+$url = trim($request_uri, '/');
+if (empty($url) || $url === 'index.php') {
+    $url = 'home';
 }
-
-$url = $raw_url !== '' ? rtrim($raw_url, '/') : 'home';
 
 try {
     $db = Database::getInstance();
