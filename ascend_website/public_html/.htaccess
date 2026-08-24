@@ -2,7 +2,6 @@ Options -Indexes
 ServerSignature Off
 
 RewriteEngine On
-RewriteBase /ascend_website/
 
 # Uploaded content must never be executed as server-side code.
 RewriteRule ^uploads/.*\.(php[0-9]?|phtml|phar|cgi|pl|py|sh)$ - [F,NC,L]
