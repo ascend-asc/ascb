@@ -191,7 +191,7 @@ INSERT INTO `pages` (`id`, `slug`, `title`, `body`, `meta_title`, `meta_descript
 
 CREATE TABLE `programs` (
   `id` int(11) NOT NULL,
-  `department` enum('College','TVET','Basic Ed') NOT NULL,
+  `department` enum('Basic Ed','Diploma','College') NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` text DEFAULT NULL,
   `brochure_pdf` varchar(255) DEFAULT NULL,
@@ -207,14 +207,14 @@ INSERT INTO `programs` (`id`, `department`, `name`, `description`, `brochure_pdf
 (1, 'Basic Ed', 'Elementary Department', '(est. 1968)', NULL, 1, '2026-07-30 05:28:14'),
 (2, 'Basic Ed', 'Junior High School', '', NULL, 1, '2026-07-30 05:28:37'),
 (3, 'Basic Ed', 'Senior High School', '(with dedicated 3-storey building)', NULL, 1, '2026-07-30 05:29:14'),
-(4, 'TVET', 'Diploma Business of Operation Technology ', 'DBOT → ladders to BS Business Administration', NULL, 1, '2026-07-30 05:31:03'),
-(5, 'TVET', 'Diploma of Security Operation Technology', 'DSOT → ladders to BS Criminology', NULL, 1, '2026-07-30 05:34:01'),
-(6, 'TVET', 'Diploma Information System Technology', 'DIST → ladders to BS Information Systems', NULL, 1, '2026-07-30 05:34:53'),
-(7, 'TVET', 'Diploma Information Technology', 'DIT → ladders to BS Information Technology', NULL, 1, '2026-07-30 05:35:23'),
+(4, 'Diploma', 'Diploma Business of Operation Technology ', 'Ladderized program leading to Bachelor of Science in Business Administration major in Marketing Management.', NULL, 1, '2026-07-30 05:31:03'),
+(5, 'Diploma', 'Diploma of Security Operation Technology', 'DSOT → ladders to BS Criminology', NULL, 1, '2026-07-30 05:34:01'),
+(6, 'Diploma', 'Diploma Information System Technology', 'DIST → ladders to BS Information Systems', NULL, 1, '2026-07-30 05:34:53'),
+(7, 'Diploma', 'Diploma Information Technology', 'DIT → ladders to BS Information Technology', NULL, 1, '2026-07-30 05:35:23'),
 (8, 'College', 'College of Criminal Justice Education (CCJE)', 'Bachelor of Science in Criminology (BSCrim)', NULL, 1, '2026-07-30 05:37:21'),
 (9, 'College', 'College of Computer Education (CCE)', 'Bachelor of Science in Information Systems (BSIS)\r\nBachelor of Science in Information Technology (BSIT)\r\nBachelor of Science in Computer Science (BSCS) — with Associate program', NULL, 1, '2026-07-30 05:38:04'),
-(10, 'College', 'College of Accountancy Education (CAE)', 'Bachelor in Accountancy / BS Accountancy', NULL, 1, '2026-07-30 05:38:22'),
-(11, 'College', 'College of Business Administration and Education (CBAE)', 'Bachelor of Science in Commerce (BSC)\r\nBachelor of Science in Accounting Technology\r\nBachelor of Science in Business Administration\r\n2-year Secretarial Course', NULL, 1, '2026-07-30 05:38:49'),
+(10, 'College', 'College of Accountancy Education (CAE)', 'Bachelor of Science in Accountancy (BSA)', NULL, 1, '2026-07-30 05:38:22'),
+(11, 'College', 'College of Business Administration and Education (CBAE)', 'Bachelor of Science in Commerce (BSC)\r\nBachelor of Science in Accounting Technology\r\nBachelor of Science in Business Administration\r\n- Financial Management\r\n- Marketing Management\r\n- Human Resource Development Management\r\n2-year Secretarial Course', NULL, 1, '2026-07-30 05:38:49'),
 (12, 'College', 'College of Teacher Education (CTE)', 'Bachelor of Science in Elementary Education (BSEEd)\r\n(Secondary Education / other teacher-ed tracks, if offered — confirm with the Dean&#39;s office)', NULL, 1, '2026-07-30 05:39:04'),
 (13, 'College', 'Graduate School', 'Master&#39;s/Doctoral programs (opened 1982 to serve professionals in private and public schools)', NULL, 1, '2026-07-30 05:39:26');
 
