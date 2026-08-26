@@ -179,7 +179,7 @@ require_once __DIR__ . '/../../partials/sidebar.php';
                       <label class="form-label">Department</label>
                       <select class="form-select" name="department">
                           <option value="College">College</option>
-                          <option value="TVET">TESDA / TVET</option>
+                          <option value="Diploma">Diploma</option>
                           <option value="Basic Ed">Basic Education</option>
                       </select>
                   </div>
@@ -230,7 +230,7 @@ require_once __DIR__ . '/../../partials/sidebar.php';
                       <label class="form-label">Department</label>
                       <select class="form-select" name="department" id="edit_department">
                           <option value="College">College</option>
-                          <option value="TVET">TESDA / TVET</option>
+                          <option value="Diploma">Diploma</option>
                           <option value="Basic Ed">Basic Education</option>
                       </select>
                   </div>

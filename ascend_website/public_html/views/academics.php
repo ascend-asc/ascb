@@ -12,7 +12,7 @@ require_once __DIR__ . '/partials/header.php';
 <div class="page-hero text-white">
     <div class="container text-center py-4">
         <h1 class="display-4 fw-bold">Academic Programs</h1>
-        <p class="lead">College, TVET/TESDA, and Basic Education Offerings</p>
+        <p class="lead">College, Diploma, and Basic Education Offerings</p>
     </div>
 </div>
 

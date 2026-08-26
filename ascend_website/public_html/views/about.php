@@ -25,7 +25,7 @@ require_once __DIR__ . '/partials/header.php';
         <div class="col-md-6 mb-4">
             <h2 class="text-primary fw-bold mb-3">Our History</h2>
             <p>Andres Soriano Colleges of Bislig (ASCB) was established in 1952 with the commitment to provide quality education in Bislig City and surrounding regions in Surigao del Sur.</p>
-            <p>Over decades of steadfast dedication, ASCB has grown into a premier educational institution providing Basic Education, TVET/TESDA courses, and Higher Education degree programs.</p>
+            <p>Over decades of steadfast dedication, ASCB has grown into a premier educational institution providing Basic Education, Diploma courses, and Higher Education degree programs.</p>
         </div>
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm border-0 bg-light p-4">
