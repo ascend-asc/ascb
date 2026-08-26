@@ -3,7 +3,7 @@ $page_title = 'Academics';
 $page_description = 'Explore the academic programs offered at ASCB including higher education, technical-vocational, and basic education.';
 ?>
 <?php
-$db->query('SELECT * FROM programs WHERE is_active = 1 ORDER BY department ASC, name ASC');
+$db->query("SELECT * FROM programs WHERE is_active = 1 ORDER BY FIELD(department,'Basic Ed','Diploma','College'), name ASC");
 $programs = $db->resultSet();
 
 require_once __DIR__ . '/partials/header.php';
