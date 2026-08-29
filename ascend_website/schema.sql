@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS news_events (
 
 CREATE TABLE IF NOT EXISTS programs (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    department ENUM('College', 'TVET', 'Basic Ed') NOT NULL,
+    department ENUM('Basic Ed', 'Diploma', 'College') NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     brochure_pdf VARCHAR(255),
