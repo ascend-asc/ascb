@@ -17,9 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $message = '<div class="alert alert-danger">Invalid CSRF token.</div>';
     } else {
         if (isset($_POST['action']) && $_POST['action'] == 'save_program') {
-            $department = filter_var($_POST['department'], FILTER_SANITIZE_STRING);
-            $name = filter_var($_POST['name'], FILTER_SANITIZE_STRING);
-            $description = filter_var($_POST['description'], FILTER_SANITIZE_STRING);
+            $department = trim($_POST['department'] ?? '');
+            $name = trim($_POST['name'] ?? '');
+            $description = trim($_POST['description'] ?? '');
             $is_active = isset($_POST['is_active']) ? 1 : 0;
             
             $brochure_pdf = null;
@@ -44,9 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         } elseif (isset($_POST['action']) && $_POST['action'] == 'edit_program') {
             $id = (int)$_POST['program_id'];
-            $department = filter_var($_POST['department'], FILTER_SANITIZE_STRING);
-            $name = filter_var($_POST['name'], FILTER_SANITIZE_STRING);
-            $description = filter_var($_POST['description'], FILTER_SANITIZE_STRING);
+            $department = trim($_POST['department'] ?? '');
+            $name = trim($_POST['name'] ?? '');
+            $description = trim($_POST['description'] ?? '');
             $is_active = isset($_POST['is_active']) ? 1 : 0;
             
             // Keep existing brochure if none uploaded
