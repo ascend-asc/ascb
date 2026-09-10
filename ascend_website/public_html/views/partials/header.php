@@ -25,7 +25,7 @@
                 <img src="<?php echo URLROOT; ?>/assets/images/ascb-logo-transparent.png" alt="ASCB Logo" style="height: 60px;">
                 <div class="ms-2 text-white lh-sm d-none d-md-block">
                     <strong class="d-block" style="font-size: 1.1rem; font-weight: 700;">Andres Soriano</strong>
-                    <small class="d-block" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.9;">COLLEGES OF BISLIG</small>
+                    <small class="d-block" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.9;">COLLEGES OF BISLIG, INC.</small>
                 </div>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation menu">
