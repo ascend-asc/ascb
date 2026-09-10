@@ -32,24 +32,7 @@ $page_description = 'Discover scholarship opportunities available at ASCB for de
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-4">
-                    <div class="mb-3"><span class="badge bg-primary text-white px-3 py-2 fs-6">Institutional</span></div>
-                    <h4 class="fw-bold text-primary">Academic Excellence Award</h4>
-                    <p class="text-muted">Awarded to students with outstanding academic performance. Full and partial tuition discount grants available for top performers.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-4">
-                    <div class="mb-3"><span class="badge bg-primary text-white px-3 py-2 fs-6">Institutional</span></div>
-                    <h4 class="fw-bold text-primary">Athletic Scholarship</h4>
-                    <p class="text-muted">For student-athletes who represent ASCB in regional and national competitions. Covers partial tuition fees and training support.</p>
-                </div>
-            </div>
-        </div>
+
         <div class="col-md-6 col-lg-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body p-4">
